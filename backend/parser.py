@@ -8,6 +8,32 @@ import casparser
 from casparser import read_cas_pdf
 
 
+def _to_dict(obj: Any) -> dict[str, Any]:
+    """Convert a casparser result to a plain dict.
+
+    Handles the case where *casparser* returns a ``CASData`` Pydantic model
+    instead of a plain ``dict`` (behaviour varies by version).
+
+    Conversion priority:
+    1. Already a ``dict`` – returned as-is.
+    2. Pydantic v2 model – uses ``model_dump()``.
+    3. Generic object with a ``__dict__`` attribute – uses ``dict(__dict__)``.
+    4. Anything else – raises ``TypeError``.
+    """
+    if isinstance(obj, dict):
+        return obj
+    if hasattr(obj, "model_dump") and callable(obj.model_dump):
+        return obj.model_dump()
+    if hasattr(obj, "__dict__"):
+        # Last-resort fallback for dataclasses or simple objects produced by
+        # older casparser versions that are neither dicts nor Pydantic models.
+        return dict(obj.__dict__)
+    raise TypeError(
+        f"Cannot convert {type(obj).__name__!r} to dict; "
+        "expected a dict or a Pydantic model."
+    )
+
+
 def parse_cas_pdf(file_bytes: bytes, password: str) -> dict[str, Any]:
     """Parse a CAS PDF file and return structured data.
 
@@ -29,7 +55,7 @@ def parse_cas_pdf(file_bytes: bytes, password: str) -> dict[str, Any]:
             raise ValueError("Incorrect CAS password. Please check and try again.") from exc
         raise ValueError(f"Failed to parse CAS PDF: {exc}") from exc
 
-    return _structure_cas_data(result)
+    return _structure_cas_data(_to_dict(result))
 
 
 def _structure_cas_data(raw: dict[str, Any]) -> dict[str, Any]:
