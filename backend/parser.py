@@ -129,8 +129,6 @@ def _structure_cas_data(raw: dict[str, Any]) -> dict[str, Any]:
 
                 if txn_amount > 0:
                     invested_amount += txn_amount
-                elif txn_amount < 0:
-                    invested_amount += txn_amount
 
             category = _infer_category(scheme_name)
             scheme_record: dict[str, Any] = {
