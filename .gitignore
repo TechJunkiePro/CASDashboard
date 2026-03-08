@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Backend runtime
+backend/__pycache__/
+
+# Node / Frontend build artifacts are excluded via frontend/.gitignore
+# But also exclude at root level
+frontend/node_modules/
+frontend/dist/
+
+# MacOS
+.DS_Store
+
+# CAS PDFs (may contain personal data)
+sample_data/*.pdf
